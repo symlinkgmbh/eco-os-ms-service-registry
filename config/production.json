@@ -1,0 +1,16 @@
+{
+  "environment": "production",
+  "version": "0.0.1",
+  "buildDate": "NOW",
+  "buildSHA": "4-8-15-16-23-42",
+  "name": "eco-os-service-registry",
+  "serviceId": "001",
+  "server": {
+    "port": "8001"
+  },
+  "checkInterval": 10000,
+  "maxHealthInSeconds": 10,
+  "maxHttpTimeout": 10000,
+  "performServerSideDiscovery": true,
+  "performClientSideDiscovery": false
+}

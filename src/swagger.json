@@ -1,0 +1,320 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "The service registry perform server side discovery for registered microservice and holds all list of registered service in the redis database. Every 10 seconds the registry will check over the heartbeat endpoint if the service is still alive.",
+    "version": "1.0.0",
+    "title": "2ndLock service registry",
+    "termsOfService": "http://2ndLock.com",
+    "contact": {
+      "email": "jens@symlink.de"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "registry",
+      "description": "Service registry"
+    },
+    {
+      "name": "config",
+      "description": "Expose current redis database connection"
+    },
+    {
+      "name": "heartbeat",
+      "description": "Get current heartbeat from service"
+    }
+  ],
+  "schemes": ["http", "https"],
+  "paths": {
+    "/registry": {
+      "get": {
+        "tags": ["registry"],
+        "summary": "get complete list of all registered services",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "format": "string"
+                  },
+                  "address": {
+                    "type": "string",
+                    "format": "string"
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "string"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "string"
+                  },
+                  "lastHeartBeat": {
+                    "type": "number",
+                    "format": "int32"
+                  },
+                  "humanReadAbleDate": {
+                    "type": "string",
+                    "format": "string"
+                  },
+                  "state": {
+                    "type": "string",
+                    "format": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["registry"],
+        "summary": "add service to registry",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "service",
+            "description": "The service to add to registry.",
+            "schema": {
+              "type": "object",
+              "required": ["name", "address", "url"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "address": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "id": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "lastHeartBeat": {
+                  "type": "number",
+                  "format": "int32"
+                },
+                "humanReadAbleDate": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "state": {
+                  "type": "string",
+                  "format": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/registry/id": {
+      "get": {
+        "tags": ["registry"],
+        "summary": "get registry entry by id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "description": "id from service"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "address": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "id": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "lastHeartBeat": {
+                  "type": "number",
+                  "format": "int32"
+                },
+                "humanReadAbleDate": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "state": {
+                  "type": "string",
+                  "format": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "service not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["registry"],
+        "summary": "delete registry entry by id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string",
+            "description": "id from service"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/registry/search/name": {
+      "get": {
+        "tags": ["registry"],
+        "summary": "search for registered service instance",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "type": "string",
+            "description": "name from service to search for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "address": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "id": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "lastHeartBeat": {
+                  "type": "number",
+                  "format": "int32"
+                },
+                "humanReadAbleDate": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "state": {
+                  "type": "string",
+                  "format": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/registry/config/redis": {
+      "get": {
+        "tags": ["config"],
+        "summary": "get current redis database configuration",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "host": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "port": {
+                  "type": "string",
+                  "format": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/heartbeat": {
+      "get": {
+        "tags": ["heartbeat"],
+        "summary": "get current heartbeat from service",
+        "description": "response with current service health",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": ["metrics"],
+        "summary": "get current memory metrics form servie",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}
