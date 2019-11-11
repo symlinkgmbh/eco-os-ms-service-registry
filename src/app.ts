@@ -44,53 +44,42 @@ export class Bootstrapper {
     this.registryTerminationHandler();
   }
 
-  public init(): Promise<Application> {
-    return new Promise((resolve, reject) => {
-      Promise.all([this.initLogSystem(), this.printAdditionalInformation(), this.initHealthSystem()])
-        .then(() => {
-          resolve(this.api.init());
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    });
+  public async init(): Promise<Application> {
+    try {
+      this.initLogSystem();
+      this.validateDateEnvironment();
+      this.initHealthSystem();
+      return await this.api.init();
+    } catch (err) {
+      Log.log(err, LogLevel.error);
+      process.exit(1);
+      throw new Error(err);
+    }
   }
 
-  private initLogSystem(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        resolve(Log.log(`init ${Config.get("name")} ${Config.get("version")}`, LogLevel.info));
-      } catch (err) {
-        Log.log(err, LogLevel.error);
-        reject(err);
-      }
-    });
+  private initLogSystem(): void {
+    Log.log(`init ${Config.get("name")} ${Config.get("version")}`, LogLevel.info);
+    return;
   }
 
-  private initHealthSystem(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        this.health.init();
-        resolve();
-      } catch (err) {
-        Log.log(err, LogLevel.error);
-        reject(err);
-      }
-    });
+  private initHealthSystem(): void {
+    try {
+      this.health.init();
+    } catch (err) {
+      Log.log(err, LogLevel.error);
+      process.exit(1);
+    }
   }
 
-  private printAdditionalInformation(): Promise<void> {
-    return new Promise((resolve) => {
-      if (!process.env.SECONDLOCK_REDIS_URI) {
-        Log.log("missing SECONDLOCK_REDIS_URI environment variable", LogLevel.error);
-        throw new Error("missing SECONDLOCK_REDIS_URI environment variable");
-      }
+  private validateDateEnvironment(): void {
+    if (!process.env.SECONDLOCK_REDIS_URI) {
+      Log.log("missing SECONDLOCK_REDIS_URI environment variable", LogLevel.error);
+      throw new Error("missing SECONDLOCK_REDIS_URI environment variable");
+    }
 
-      if (process.env.RUN_ON_KUBERNETES !== undefined) {
-        Log.log(`support for kubernets: ${process.env.RUN_ON_KUBERNETES}`, LogLevel.info);
-      }
-      resolve();
-    });
+    if (process.env.RUN_ON_KUBERNETES !== undefined) {
+      Log.log(`support for kubernets: ${process.env.RUN_ON_KUBERNETES}`, LogLevel.info);
+    }
   }
 
   private registryExceptionHandler(): void {

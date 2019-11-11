@@ -23,7 +23,7 @@ import { RegistryStates } from "./RegistryStates";
 import { Log, LogLevel } from "@symlinkde/eco-os-pk-log";
 import { StaticRegistryUtil } from "./StaticRegistryUtil";
 import { redisContainer, REDIS_TYPES } from "@symlinkde/eco-os-pk-redis";
-import { RestError } from "@symlinkde/eco-os-pk-api";
+import { CustomRestError, apiResponseCodes } from "@symlinkde/eco-os-pk-api";
 import { injectable } from "inversify";
 
 @injectable()
@@ -65,7 +65,13 @@ export class Registry implements IRegistry {
     const result = await this.redisClient.get<MsRegistry.IRegistryEntry>(id);
 
     if (!result) {
-      throw new RestError("registry", "service not found", 404);
+      throw new CustomRestError(
+        {
+          code: apiResponseCodes.C836.code,
+          message: apiResponseCodes.C836.message,
+        },
+        404,
+      );
     }
 
     return result;
@@ -73,6 +79,15 @@ export class Registry implements IRegistry {
 
   public async getRegistryEntriesByName(query: string): Promise<MsRegistry.IRegistryEntry> {
     const results = await this.filterRegisteredEntries(query);
+    if (results.length < 1) {
+      throw new CustomRestError(
+        {
+          code: apiResponseCodes.C837.code,
+          message: apiResponseCodes.C837.message + query,
+        },
+        404,
+      );
+    }
     return results[Math.floor(Math.random() * results.length)];
   }
 
@@ -107,7 +122,7 @@ export class Registry implements IRegistry {
     const filteredArray: Array<MsRegistry.IRegistryEntry> = [];
     for (const entry in registryStore) {
       if (registryStore[entry].name === query && registryStore[entry].state === RegistryStates.up) {
-        await filteredArray.push(registryStore[entry]);
+        filteredArray.push(registryStore[entry]);
       }
     }
     return filteredArray;

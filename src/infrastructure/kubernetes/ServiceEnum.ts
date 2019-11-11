@@ -94,4 +94,9 @@ export const serviceMap: Array<IServiceMapEntry> = [
     kubernetesName: "license",
     port: "8016",
   },
+  {
+    name: "eco-os-federation-key-service",
+    kubernetesName: "federation-key",
+    port: "8018",
+  },
 ];

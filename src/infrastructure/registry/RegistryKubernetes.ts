@@ -23,7 +23,7 @@ import { RegistryStates } from "./RegistryStates";
 import { Log, LogLevel } from "@symlinkde/eco-os-pk-log";
 import { StaticRegistryUtil } from "./StaticRegistryUtil";
 import { redisContainer, REDIS_TYPES } from "@symlinkde/eco-os-pk-redis";
-import { RestError } from "@symlinkde/eco-os-pk-api";
+import { CustomRestError, apiResponseCodes } from "@symlinkde/eco-os-pk-api";
 import { serviceMap } from "../kubernetes/ServiceEnum";
 import { injectable } from "inversify";
 
@@ -75,7 +75,13 @@ export class RegistryKubernetes implements IRegistry {
     const result = await this.redisClient.get<MsRegistry.IRegistryEntry>(id);
 
     if (!result) {
-      throw new RestError("registry", "service not found", 404);
+      throw new CustomRestError(
+        {
+          code: apiResponseCodes.C836.code,
+          message: apiResponseCodes.C836.message,
+        },
+        404,
+      );
     }
 
     return result;
@@ -96,7 +102,7 @@ export class RegistryKubernetes implements IRegistry {
         license = entryFormRedis.license;
       }
 
-      await filteredArray.push(<MsRegistry.IRegistryEntry>{
+      filteredArray.push(<MsRegistry.IRegistryEntry>{
         address: `http://${serviceMap[entry].kubernetesName}:${serviceMap[entry].port}`,
         url: `http://${serviceMap[entry].kubernetesName}:${serviceMap[entry].port}`,
         name: serviceMap[entry].kubernetesName,
@@ -121,7 +127,7 @@ export class RegistryKubernetes implements IRegistry {
   }
 
   public async updateRegistryEntryByIdAsDead(id: string): Promise<void> {
-    await this.removeRegistryEntryById(id);
+    this.removeRegistryEntryById(id);
     return;
   }
 
@@ -137,7 +143,7 @@ export class RegistryKubernetes implements IRegistry {
     for (const entryR in registryStore) {
       for (const entry in serviceMap) {
         if (serviceMap[entry].name === query && registryStore[entryR].name === query) {
-          await filteredArray.push(<MsRegistry.IRegistryEntry>{
+          filteredArray.push(<MsRegistry.IRegistryEntry>{
             address: `http://${serviceMap[entry].kubernetesName}:${serviceMap[entry].port}`,
             url: `http://${serviceMap[entry].kubernetesName}:${serviceMap[entry].port}`,
             name: serviceMap[entry].kubernetesName,
